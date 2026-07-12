@@ -1,8 +1,10 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using StartGame.Components;
+using StartGame.Utils;
 using TMPro;
 using Unity.Entities;
+using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -34,7 +36,8 @@ namespace Ui.StartGame
         private void Start()
         {
             _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
-            
+
+            ConnectionStatusNotifier.OnConnectionStatusChanged += OnConnectionStatusChanged;
             _hostButton.onClick.AddListener(OnHostClicked);
             _joinButton.onClick.AddListener(OnJoinClicked);
             _closeJoinPopupButton.onClick.AddListener(OnCloseJoinPopupClicked);
@@ -42,8 +45,18 @@ namespace Ui.StartGame
             _acceptNameButton.onClick.AddListener(OnAcceptNameClicked);
             _readyButton.onClick.AddListener(OnReadyClicked);
             _startGameButton.onClick.AddListener(OnStartGameClicked);
-            
             _enterIpAddressInputField.onEndEdit.AddListener(OnIpEntered);
+        }
+
+        private void OnConnectionStatusChanged(ConnectionState.State state, NetworkStreamDisconnectReason disconnectReason)
+        {
+            Debug.Log($"State: {state}");
+            if (state == ConnectionState.State.Disconnected)
+            {
+                Debug.Log($"Disconnect reason: {disconnectReason}");
+            }
+            
+            _blockInputObject.SetActive(false);
         }
 
         private void OnHostClicked()
@@ -104,6 +117,7 @@ namespace Ui.StartGame
         
         private void OnDestroy()
         {
+            ConnectionStatusNotifier.OnConnectionStatusChanged -= OnConnectionStatusChanged;
             _hostButton.onClick.RemoveAllListeners();
             _joinButton.onClick.RemoveAllListeners();
             _closeJoinPopupButton.onClick.RemoveAllListeners();
@@ -111,6 +125,7 @@ namespace Ui.StartGame
             _acceptNameButton.onClick.RemoveAllListeners();
             _readyButton.onClick.RemoveAllListeners();
             _startGameButton.onClick.RemoveAllListeners();
+            _enterIpAddressInputField.onEndEdit.RemoveAllListeners();
         }
     }
 }
