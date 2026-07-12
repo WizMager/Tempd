@@ -1,29 +1,38 @@
 ﻿using StartGame.Components;
-using Unity.Burst;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Networking.Transport;
+using UnityEngine;
 
 namespace StartGame.Systems
 {
     [WorldSystemFilter(WorldSystemFilterFlags.LocalSimulation)]
-    public partial struct JoinRequestHandleSystem : ISystem
+    public partial struct HostRequestHandleSystem : ISystem
     {
-        [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
-            state.RequireForUpdate<JoinRequestComponent>();
+            state.RequireForUpdate<HostRequestComponent>();
         }
 
         public void OnUpdate(ref SystemState state)
         {
             var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
             
-            foreach (var (requestComponent, entity) in SystemAPI.Query<RefRO<JoinRequestComponent>>().WithEntityAccess())
+            foreach (var (_, entity) in SystemAPI.Query<HostRequestComponent>().WithEntityAccess())
             {
+                Application.runInBackground = true;
+                var serverWorld = ClientServerBootstrap.CreateServerWorld("ServerWorld");
                 var clientWorld = ClientServerBootstrap.CreateClientWorld("ClientWorld");
-                var connectEndpoint = NetworkEndpoint.Parse(requestComponent.ValueRO.EnteredIpAddress.ToString(), 7979);
+                
+                var listenEndpoint = NetworkEndpoint.Parse("0.0.0.0", 7979);
+                var listenRequest = serverWorld.EntityManager.CreateEntity();
+                serverWorld.EntityManager.AddComponentData(listenRequest, new NetworkStreamRequestListen
+                {
+                    Endpoint = listenEndpoint
+                });
+                
+                var connectEndpoint = NetworkEndpoint.Parse("127.0.0.1", 7979);
                 var requestConnectEntity = clientWorld.EntityManager.CreateEntity();
                 clientWorld.EntityManager.AddComponentData(requestConnectEntity, new NetworkStreamRequestConnect
                 {

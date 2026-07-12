@@ -24,7 +24,7 @@ namespace Ui.StartGame
         [SerializeField] private GameObject _menuContainer;
         [SerializeField] private GameObject _joinPopupContainer;
         [SerializeField] private GameObject _lobbyContainer;
-        [SerializeField] private GameObject _blockJoinPopupObject;
+        [SerializeField] private GameObject _blockInputObject;
         
         [SerializeField] private Transform _playerListRoot;
         [SerializeField] private PlayerListElement _playerListElementprefab;
@@ -48,7 +48,8 @@ namespace Ui.StartGame
 
         private void OnHostClicked()
         {
-            
+            _blockInputObject.SetActive(true);
+            _entityManager.CreateEntity(typeof(HostRequestComponent));
         }
         
         private void OnJoinClicked()
@@ -78,7 +79,7 @@ namespace Ui.StartGame
                 return;
             }
 
-            _blockJoinPopupObject.SetActive(true);
+            _blockInputObject.SetActive(true);
             
             var entity = _entityManager.CreateEntity();
             _entityManager.AddComponentData(entity, new JoinRequestComponent

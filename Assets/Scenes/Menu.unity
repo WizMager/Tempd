@@ -1725,7 +1725,6 @@ RectTransform:
   - {fileID: 1893584777}
   - {fileID: 1497519640}
   - {fileID: 41692212}
-  - {fileID: 918874618}
   m_Father: {fileID: 791691689}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -1764,6 +1763,7 @@ RectTransform:
   - {fileID: 742744293}
   - {fileID: 1159097089}
   - {fileID: 785992139}
+  - {fileID: 918874618}
   m_Father: {fileID: 1204417087}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1959,7 +1959,7 @@ GameObject:
   - component: {fileID: 918874620}
   - component: {fileID: 918874619}
   m_Layer: 5
-  m_Name: BlockPopupImage
+  m_Name: BlockInputImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1972,12 +1972,12 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 918874617}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 785992139}
+  m_Father: {fileID: 791691689}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -2311,7 +2311,7 @@ MonoBehaviour:
   _menuContainer: {fileID: 791691688}
   _joinPopupContainer: {fileID: 785992138}
   _lobbyContainer: {fileID: 821803854}
-  _blockJoinPopupObject: {fileID: 918874617}
+  _blockInputObject: {fileID: 918874617}
   _playerListRoot: {fileID: 5962579}
   _playerListElementprefab: {fileID: 5398855416383627385, guid: 762f3d659fe7fad43aadf5742434708b, type: 3}
 --- !u!1 &1211561777
