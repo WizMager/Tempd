@@ -1,33 +1,34 @@
 ﻿using StartGame.Components;
 using Unity.Burst;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
+using Unity.Networking.Transport;
 
 namespace StartGame.Systems
 {
     [WorldSystemFilter(WorldSystemFilterFlags.LocalSimulation)]
     public partial struct JoinRequestHandleSystem : ISystem
     {
-        private EntityQuery _joinRequestQuery;
-        
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
             state.RequireForUpdate<JoinRequestComponent>();
-            
-            _joinRequestQuery = SystemAPI.QueryBuilder().WithAll<JoinRequestComponent>().Build();
         }
 
         public void OnUpdate(ref SystemState state)
         {
-            var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
-            foreach (var requestEntity in _joinRequestQuery.ToEntityArray(Allocator.Temp))
+            foreach (var (requestComponent, entity) in SystemAPI.Query<JoinRequestComponent>().WithEntityAccess())
             {
                 var clientWorld = ClientServerBootstrap.CreateClientWorld("ClientWorld");
-                //add logic for connect or unlock join popup
-                ecb.DestroyEntity(requestEntity);
+                var networkEndpoint = NetworkEndpoint.Parse(requestComponent.EnteredIpAddress.ToString(), 7979);
+                var requestConnectEntity = clientWorld.EntityManager.CreateEntity();
+                clientWorld.EntityManager.AddComponentData(requestConnectEntity, new NetworkStreamRequestConnect
+                {
+                    Endpoint = networkEndpoint
+                });
+                
+                state.EntityManager.DestroyEntity(entity);
             }
         }
     }

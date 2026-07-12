@@ -1,4 +1,6 @@
-﻿using StartGame.Components;
+﻿using System.Net;
+using System.Net.Sockets;
+using StartGame.Components;
 using TMPro;
 using Unity.Entities;
 using UnityEngine;
@@ -61,9 +63,19 @@ namespace Ui.StartGame
         
         private void OnIpEntered(string enteredIpAddress)
         {
-            if (string.IsNullOrEmpty(enteredIpAddress))
+            enteredIpAddress = "127.0.0.1";//DEBUG!!!
+            enteredIpAddress = string.IsNullOrWhiteSpace(enteredIpAddress)
+                ? _enterIpAddressInputField.text.Trim()
+                : enteredIpAddress.Trim();
+            
+            var isValidIpv4 = enteredIpAddress.Split('.').Length == 4 
+                              && IPAddress.TryParse(enteredIpAddress, out var address) 
+                              && address.AddressFamily == AddressFamily.InterNetwork;
+            
+            if (!isValidIpv4)
             {
-                enteredIpAddress = _enterIpAddressInputField.text;
+                Debug.LogWarning("Введите корректный IPv4, например 127.0.0.1");
+                return;
             }
 
             _blockJoinPopupObject.SetActive(true);
