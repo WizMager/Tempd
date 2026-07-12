@@ -1,13 +1,13 @@
 ﻿using Unity.NetCode;
 
-namespace Lobby
+namespace StartGame
 {
     public class GameBootstrap : ClientServerBootstrap
     {
         public override bool Initialize(string defaultWorldName)
         {
             AutoConnectPort = 0;
-            CreateLocalWorld(defaultWorldName);
+            CreateLocalWorld("LocalWorld");
             
             return true;
         }
