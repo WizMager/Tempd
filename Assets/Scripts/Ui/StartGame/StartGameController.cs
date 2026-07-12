@@ -10,6 +10,7 @@ namespace Ui.StartGame
     {
         [SerializeField] private Button _hostButton;
         [SerializeField] private Button _joinButton;
+        [SerializeField] private Button _closeJoinPopupButton;
         [SerializeField] private Button _enterIpButton;
         [SerializeField] private Button _acceptNameButton;
         [SerializeField] private Button _readyButton;
@@ -21,12 +22,12 @@ namespace Ui.StartGame
         [SerializeField] private GameObject _menuContainer;
         [SerializeField] private GameObject _joinPopupContainer;
         [SerializeField] private GameObject _lobbyContainer;
+        [SerializeField] private GameObject _blockJoinPopupObject;
         
         [SerializeField] private Transform _playerListRoot;
         [SerializeField] private PlayerListElement _playerListElementprefab;
         
         private EntityManager _entityManager;
-        private bool _isHandleEnteredIp;
 
         private void Start()
         {
@@ -34,6 +35,7 @@ namespace Ui.StartGame
             
             _hostButton.onClick.AddListener(OnHostClicked);
             _joinButton.onClick.AddListener(OnJoinClicked);
+            _closeJoinPopupButton.onClick.AddListener(OnCloseJoinPopupClicked);
             _enterIpButton.onClick.AddListener(() => OnIpEntered(null));
             _acceptNameButton.onClick.AddListener(OnAcceptNameClicked);
             _readyButton.onClick.AddListener(OnReadyClicked);
@@ -52,17 +54,19 @@ namespace Ui.StartGame
             _joinPopupContainer.SetActive(true);
         }
 
+        private void OnCloseJoinPopupClicked()
+        {
+            _joinPopupContainer.SetActive(false);
+        }
+        
         private void OnIpEntered(string enteredIpAddress)
         {
-            if (_isHandleEnteredIp)
-                return;
-            
             if (string.IsNullOrEmpty(enteredIpAddress))
             {
                 enteredIpAddress = _enterIpAddressInputField.text;
             }
-            
-            _isHandleEnteredIp = true;
+
+            _blockJoinPopupObject.SetActive(true);
             
             var entity = _entityManager.CreateEntity();
             _entityManager.AddComponentData(entity, new JoinRequestComponent
@@ -89,6 +93,7 @@ namespace Ui.StartGame
         {
             _hostButton.onClick.RemoveAllListeners();
             _joinButton.onClick.RemoveAllListeners();
+            _closeJoinPopupButton.onClick.RemoveAllListeners();
             _enterIpButton.onClick.RemoveAllListeners();
             _acceptNameButton.onClick.RemoveAllListeners();
             _readyButton.onClick.RemoveAllListeners();
