@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Sockets;
 using StartGame.Components;
 using StartGame.Utils;
@@ -19,6 +20,7 @@ namespace Ui.StartGame
         [SerializeField] private Button _acceptNameButton;
         [SerializeField] private Button _readyButton;
         [SerializeField] private Button _startGameButton;
+        [SerializeField] private Button _exitButton;
 
         [SerializeField] private TMP_InputField _enterIpAddressInputField;
         [SerializeField] private TMP_InputField _enterNameInputField;
@@ -45,6 +47,8 @@ namespace Ui.StartGame
             _acceptNameButton.onClick.AddListener(OnAcceptNameClicked);
             _readyButton.onClick.AddListener(OnReadyClicked);
             _startGameButton.onClick.AddListener(OnStartGameClicked);
+            _exitButton.onClick.AddListener(OnExitClicked);
+            
             _enterIpAddressInputField.onEndEdit.AddListener(OnIpEntered);
         }
 
@@ -55,8 +59,33 @@ namespace Ui.StartGame
             {
                 Debug.Log($"Disconnect reason: {disconnectReason}");
             }
-            
+
+            switch (state)
+            {
+                case ConnectionState.State.Disconnected:
+                    ShowMenu();
+                    break;
+                case ConnectionState.State.Connected:
+                    ShowLobby();
+                    break;
+            }
+        }
+
+        private void ShowMenu()
+        {
             _blockInputObject.SetActive(false);
+            
+            _menuContainer.SetActive(true);
+            _joinPopupContainer.SetActive(false);
+            _lobbyContainer.SetActive(false);
+        }
+
+        private void ShowLobby()
+        {
+            _blockInputObject.SetActive(false);
+            
+            _menuContainer.SetActive(false);
+            _lobbyContainer.SetActive(true);
         }
 
         private void OnHostClicked()
@@ -115,9 +144,16 @@ namespace Ui.StartGame
             
         }
         
+        private void OnExitClicked()
+        {
+            _blockInputObject.SetActive(true);
+            _entityManager.CreateEntity(typeof(LeaveRequestComponent));
+        }
+        
         private void OnDestroy()
         {
             ConnectionStatusNotifier.OnConnectionStatusChanged -= OnConnectionStatusChanged;
+            
             _hostButton.onClick.RemoveAllListeners();
             _joinButton.onClick.RemoveAllListeners();
             _closeJoinPopupButton.onClick.RemoveAllListeners();
@@ -125,6 +161,8 @@ namespace Ui.StartGame
             _acceptNameButton.onClick.RemoveAllListeners();
             _readyButton.onClick.RemoveAllListeners();
             _startGameButton.onClick.RemoveAllListeners();
+            _exitButton.onClick.RemoveAllListeners();
+            
             _enterIpAddressInputField.onEndEdit.RemoveAllListeners();
         }
     }
