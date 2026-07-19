@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using StartGame.Components;
 using StartGame.Utils;
 using TMPro;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
@@ -33,11 +35,15 @@ namespace Ui.StartGame
         [SerializeField] private Transform _playerListRoot;
         [SerializeField] private PlayerListElement _playerListElementprefab;
         
-        private EntityManager _entityManager;
+        private EntityManager _localWorldEntityManager;
+        private EntityManager _clientWorldEntityManager;
+        private bool _hasClientWorldEntityManager;
+        private readonly Dictionary<int, PlayerListElement> _playerListElements = new();
+        private readonly List<int> _toRemove = new();
 
         private void Start()
         {
-            _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+            _localWorldEntityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
 
             ConnectionStatusNotifier.OnConnectionStatusChanged += OnConnectionStatusChanged;
             _hostButton.onClick.AddListener(OnHostClicked);
@@ -63,9 +69,12 @@ namespace Ui.StartGame
             switch (state)
             {
                 case ConnectionState.State.Disconnected:
+                    _hasClientWorldEntityManager = false;
                     ShowMenu();
                     break;
                 case ConnectionState.State.Connected:
+                    _clientWorldEntityManager = ClientServerBootstrap.ClientWorld.EntityManager;
+                    _hasClientWorldEntityManager = true;
                     ShowLobby();
                     break;
             }
@@ -91,7 +100,7 @@ namespace Ui.StartGame
         private void OnHostClicked()
         {
             _blockInputObject.SetActive(true);
-            _entityManager.CreateEntity(typeof(HostRequestComponent));
+            _localWorldEntityManager.CreateEntity(typeof(HostRequestComponent));
         }
         
         private void OnJoinClicked()
@@ -123,8 +132,8 @@ namespace Ui.StartGame
 
             _blockInputObject.SetActive(true);
             
-            var entity = _entityManager.CreateEntity();
-            _entityManager.AddComponentData(entity, new JoinRequestComponent
+            var entity = _localWorldEntityManager.CreateEntity();
+            _localWorldEntityManager.AddComponentData(entity, new JoinRequestComponent
             {
                 EnteredIpAddress = enteredIpAddress
             });
@@ -134,20 +143,18 @@ namespace Ui.StartGame
         {
             if (string.IsNullOrEmpty(_enterNameInputField.text))
                 return;
-
-            var entityManager = ClientServerBootstrap.ClientWorld.EntityManager;
-            var rpcEntity = entityManager.CreateEntity();
-            entityManager.AddComponentData(rpcEntity, new ChangeNameRpc
+            
+            var rpcEntity = _clientWorldEntityManager.CreateEntity();
+            _clientWorldEntityManager.AddComponentData(rpcEntity, new ChangeNameRpc
             {
                 Name = _enterNameInputField.text
             });
-            entityManager.AddComponent<SendRpcCommandRequest>(rpcEntity);
+            _clientWorldEntityManager.AddComponent<SendRpcCommandRequest>(rpcEntity);
         }
         
         private void OnReadyClicked()
         {
-            var entityManager = ClientServerBootstrap.ClientWorld.EntityManager;
-            entityManager.CreateEntity(typeof(SendRpcCommandRequest), typeof(ReadyStatusChangeRpc));
+            _clientWorldEntityManager.CreateEntity(typeof(SendRpcCommandRequest), typeof(ReadyStatusChangeRpc));
         }
 
         private void OnStartGameClicked()
@@ -158,9 +165,52 @@ namespace Ui.StartGame
         private void OnExitClicked()
         {
             _blockInputObject.SetActive(true);
-            _entityManager.CreateEntity(typeof(LeaveRequestComponent));
+            _localWorldEntityManager.CreateEntity(typeof(LeaveRequestComponent));
         }
-        
+
+        private void Update()
+        {
+            if (!_hasClientWorldEntityManager)
+                return;
+            
+            using var query = _clientWorldEntityManager.CreateEntityQuery(ComponentType.ReadOnly<LobbyPlayerComponent>());
+            var entities = query.ToEntityArray(Allocator.Temp);
+            var lobbyPlayer = query.ToComponentDataArray<LobbyPlayerComponent>(Allocator.Temp);
+            var alive = new HashSet<int>();
+
+            for (var i = 0; i < entities.Length; i++)
+            {
+                var index = entities[i].Index;
+                alive.Add(index);
+                
+                if (!_playerListElements.TryGetValue(entities[i].Index, out var player))
+                {
+                    player = Instantiate(_playerListElementprefab, _playerListRoot).GetComponent<PlayerListElement>();
+                    _playerListElements.Add(entities[i].Index, player);
+                }
+                
+                
+                player.ChangePlayerName(lobbyPlayer[i].Name.Value);
+                player.ChangeReadyStatus(lobbyPlayer[i].IsReady);
+            }
+            
+            _toRemove.Clear();
+
+            foreach (var key in _playerListElements.Keys)
+            {
+                if (alive.Contains(key))
+                    continue;
+                
+                _toRemove.Add(key);
+            }
+
+            foreach (var indexToRemove in _toRemove)
+            {
+                Destroy(_playerListElements[indexToRemove]);
+                _playerListElements.Remove(indexToRemove);
+            }
+        }
+
         private void OnDestroy()
         {
             ConnectionStatusNotifier.OnConnectionStatusChanged -= OnConnectionStatusChanged;

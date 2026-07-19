@@ -2618,7 +2618,7 @@ MonoBehaviour:
   _acceptNameButton: {fileID: 1617080862}
   _readyButton: {fileID: 253501505}
   _startGameButton: {fileID: 1973414739}
-  _exitButton: {fileID: 0}
+  _exitButton: {fileID: 1154369090}
   _enterIpAddressInputField: {fileID: 1893584778}
   _enterNameInputField: {fileID: 177859538}
   _menuContainer: {fileID: 791691688}
