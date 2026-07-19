@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using StartGame.Components;
@@ -206,7 +205,7 @@ namespace Ui.StartGame
 
             foreach (var indexToRemove in _toRemove)
             {
-                Destroy(_playerListElements[indexToRemove]);
+                Destroy(_playerListElements[indexToRemove].gameObject);
                 _playerListElements.Remove(indexToRemove);
             }
         }

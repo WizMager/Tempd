@@ -22,37 +22,58 @@ namespace StartGame.Systems
         {
             var events = SystemAPI.GetSingleton<NetworkStreamDriver>().ConnectionEventsForTick;
             var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
+            var lobbyPlayerPrefab = SystemAPI.GetSingleton<LobbyPlayerPrefabComponent>().Value;
+
+            var disconnectedIds = new NativeHashSet<int>(8, Allocator.Temp);
 
             foreach (var tickEvent in events)
             {
+                if (tickEvent.State != ConnectionState.State.Disconnected)
+                    continue;
+
                 var networkId = tickEvent.Id.Value;
-                
-                switch (tickEvent.State)
+                disconnectedIds.Add(networkId);
+
+                foreach (var (lobbyPlayer, entity) in SystemAPI.Query<RefRO<LobbyPlayerComponent>>().WithEntityAccess())
                 {
-                    case ConnectionState.State.Disconnected:
-                        foreach (var (lobbyPlayer, entity) in SystemAPI.Query<RefRO<LobbyPlayerComponent>>().WithEntityAccess())
-                        {
-                            if (lobbyPlayer.ValueRO.NetworkId != networkId)
-                                continue;
-                            
-                            ecb.DestroyEntity(entity);
-                        }
+                    if (lobbyPlayer.ValueRO.NetworkId != networkId)
                         continue;
-                    case ConnectionState.State.Connected:
-                        var lobbyPlayerPrefab = SystemAPI.GetSingleton<LobbyPlayerPrefabComponent>();
-                        var lobbyPlayerEntity = ecb.Instantiate(lobbyPlayerPrefab.Value);
-                        FixedString32Bytes name = $"Player{networkId}";
-                        ecb.SetComponent(lobbyPlayerEntity, new LobbyPlayerComponent
-                        {
-                            NetworkId = networkId,
-                            Name = name,
-                            IsReady = false
-                        });
-                        continue;
-                    default:
-                        continue;
+
+                    ecb.DestroyEntity(entity);
                 }
             }
+
+            foreach (var networkId in SystemAPI.Query<RefRO<NetworkId>>())
+            {
+                var id = networkId.ValueRO.Value;
+                if (disconnectedIds.Contains(id))
+                    continue;
+
+                var alreadyHasPlayer = false;
+                
+                foreach (var lobbyPlayer in SystemAPI.Query<RefRO<LobbyPlayerComponent>>())
+                {
+                    if (lobbyPlayer.ValueRO.NetworkId != id)
+                        continue;
+
+                    alreadyHasPlayer = true;
+                    break;
+                }
+
+                if (alreadyHasPlayer)
+                    continue;
+
+                var lobbyPlayerEntity = ecb.Instantiate(lobbyPlayerPrefab);
+                FixedString32Bytes name = $"Player{id}";
+                ecb.SetComponent(lobbyPlayerEntity, new LobbyPlayerComponent
+                {
+                    NetworkId = id,
+                    Name = name,
+                    IsReady = false
+                });
+            }
+
+            disconnectedIds.Dispose();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using StartGame.Components;
+using StartGame.Utils;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Networking.Transport;
@@ -24,6 +25,9 @@ namespace StartGame.Systems
                 Application.runInBackground = true;
                 var serverWorld = ClientServerBootstrap.CreateServerWorld("ServerWorld");
                 var clientWorld = ClientServerBootstrap.CreateClientWorld("ClientWorld");
+                
+                NetworkSceneLoader.LoadMenuSubScene(serverWorld);
+                NetworkSceneLoader.LoadMenuSubScene(clientWorld);
                 
                 var listenEndpoint = NetworkEndpoint.Parse("0.0.0.0", 7979);
                 var listenRequest = serverWorld.EntityManager.CreateEntity();

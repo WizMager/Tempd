@@ -1,4 +1,5 @@
 ﻿using StartGame.Components;
+using StartGame.Utils;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.NetCode;
@@ -23,6 +24,8 @@ namespace StartGame.Systems
             foreach (var (requestComponent, entity) in SystemAPI.Query<RefRO<JoinRequestComponent>>().WithEntityAccess())
             {
                 var clientWorld = ClientServerBootstrap.CreateClientWorld("ClientWorld");
+                NetworkSceneLoader.LoadMenuSubScene(clientWorld);
+
                 var connectEndpoint = NetworkEndpoint.Parse(requestComponent.ValueRO.EnteredIpAddress.ToString(), 7979);
                 var requestConnectEntity = clientWorld.EntityManager.CreateEntity();
                 clientWorld.EntityManager.AddComponentData(requestConnectEntity, new NetworkStreamRequestConnect
