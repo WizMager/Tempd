@@ -132,11 +132,22 @@ namespace Ui.StartGame
 
         private void OnAcceptNameClicked()
         {
-            
+            if (string.IsNullOrEmpty(_enterNameInputField.text))
+                return;
+
+            var entityManager = ClientServerBootstrap.ClientWorld.EntityManager;
+            var rpcEntity = entityManager.CreateEntity();
+            entityManager.AddComponentData(rpcEntity, new ChangeNameRpc
+            {
+                Name = _enterNameInputField.text
+            });
+            entityManager.AddComponent<SendRpcCommandRequest>(rpcEntity);
         }
         
         private void OnReadyClicked()
         {
+            var entityManager = ClientServerBootstrap.ClientWorld.EntityManager;
+            entityManager.CreateEntity(typeof(SendRpcCommandRequest), typeof(ReadyStatusChangeRpc));
         }
 
         private void OnStartGameClicked()
