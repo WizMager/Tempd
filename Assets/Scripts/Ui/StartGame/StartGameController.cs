@@ -74,6 +74,12 @@ namespace Ui.StartGame
                 case ConnectionState.State.Connected:
                     _clientWorldEntityManager = ClientServerBootstrap.ClientWorld.EntityManager;
                     _hasClientWorldEntityManager = true;
+                    
+                    if (ClientServerBootstrap.ServerWorld.IsCreated)
+                    {
+                        _startGameButton.gameObject.SetActive(true);
+                    }
+                    
                     ShowLobby();
                     break;
             }
@@ -158,7 +164,7 @@ namespace Ui.StartGame
 
         private void OnStartGameClicked()
         {
-            
+            _clientWorldEntityManager.CreateEntity(typeof(SendRpcCommandRequest), typeof(StartGameRequestRpc));
         }
         
         private void OnExitClicked()
