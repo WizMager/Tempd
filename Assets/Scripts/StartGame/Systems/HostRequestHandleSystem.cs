@@ -25,8 +25,8 @@ namespace StartGame.Systems
                 var serverWorld = ClientServerBootstrap.CreateServerWorld("ServerWorld");
                 var clientWorld = ClientServerBootstrap.CreateClientWorld("ClientWorld");
                 
-                NetworkSceneLoader.LoadMenuSubScene(serverWorld);
-                NetworkSceneLoader.LoadMenuSubScene(clientWorld);
+                NetworkSceneLoader.LoadNetworkBootSubScene(serverWorld);
+                NetworkSceneLoader.LoadNetworkBootSubScene(clientWorld);
                 
                 var listenEndpoint = NetworkEndpoint.Parse("0.0.0.0", 7979);
                 var listenRequest = serverWorld.EntityManager.CreateEntity();

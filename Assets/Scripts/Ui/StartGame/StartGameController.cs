@@ -42,9 +42,14 @@ namespace Ui.StartGame
 
         private void Start()
         {
+            SceneFlowHelper.EnsureNetworkBootLoaded();
+
             _localWorldEntityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
 
             ConnectionStatusNotifier.OnConnectionStatusChanged += OnConnectionStatusChanged;
+            SceneFlowHelper.GameStarted += OnGameStarted;
+            SceneFlowHelper.ReturnedToMenu += OnReturnedToMenu;
+
             _hostButton.onClick.AddListener(OnHostClicked);
             _joinButton.onClick.AddListener(OnJoinClicked);
             _closeJoinPopupButton.onClick.AddListener(OnCloseJoinPopupClicked);
@@ -55,11 +60,13 @@ namespace Ui.StartGame
             _exitButton.onClick.AddListener(OnExitClicked);
             
             _enterIpAddressInputField.onEndEdit.AddListener(OnIpEntered);
+
+            _startGameButton.gameObject.SetActive(false);
+            ShowMenu();
         }
 
         private void OnConnectionStatusChanged(ConnectionState.State state, NetworkStreamDisconnectReason disconnectReason)
         {
-            Debug.Log($"State: {state}");
             if (state == ConnectionState.State.Disconnected)
             {
                 Debug.Log($"Disconnect reason: {disconnectReason}");
@@ -69,20 +76,30 @@ namespace Ui.StartGame
             {
                 case ConnectionState.State.Disconnected:
                     _hasClientWorldEntityManager = false;
+                    SceneFlowHelper.UnloadGameIfLoaded();
                     ShowMenu();
                     break;
                 case ConnectionState.State.Connected:
                     _clientWorldEntityManager = ClientServerBootstrap.ClientWorld.EntityManager;
                     _hasClientWorldEntityManager = true;
-                    
-                    if (ClientServerBootstrap.ServerWorld != null && ClientServerBootstrap.ServerWorld.IsCreated)
-                    {
-                        _startGameButton.gameObject.SetActive(true);
-                    }
+                    _startGameButton.gameObject.SetActive(ClientServerBootstrap.ServerWorld is { IsCreated: true });
                     
                     ShowLobby();
                     break;
             }
+        }
+
+        private void OnGameStarted()
+        {
+            _blockInputObject.SetActive(false);
+            _menuContainer.SetActive(false);
+            _joinPopupContainer.SetActive(false);
+            _lobbyContainer.SetActive(false);
+        }
+
+        private void OnReturnedToMenu()
+        {
+            ShowMenu();
         }
 
         private void ShowMenu()
@@ -92,6 +109,7 @@ namespace Ui.StartGame
             _menuContainer.SetActive(true);
             _joinPopupContainer.SetActive(false);
             _lobbyContainer.SetActive(false);
+            _startGameButton.gameObject.SetActive(false);
         }
 
         private void ShowLobby()
@@ -219,6 +237,8 @@ namespace Ui.StartGame
         private void OnDestroy()
         {
             ConnectionStatusNotifier.OnConnectionStatusChanged -= OnConnectionStatusChanged;
+            SceneFlowHelper.GameStarted -= OnGameStarted;
+            SceneFlowHelper.ReturnedToMenu -= OnReturnedToMenu;
             
             _hostButton.onClick.RemoveAllListeners();
             _joinButton.onClick.RemoveAllListeners();

@@ -5,8 +5,9 @@ namespace StartGame.Utils
 {
     public class NetworkSceneConfig : MonoBehaviour
     {
-        [field:SerializeField] public EntitySceneReference MenuSubScene { get; private set; }
-        
+        [field: SerializeField] public EntitySceneReference NetworkBootSubScene { get; private set; }
+        [field: SerializeField] public EntitySceneReference GameSubScene { get; private set; }
+
         public static NetworkSceneConfig Instance { get; private set; }
 
         private void Awake()
@@ -16,7 +17,7 @@ namespace StartGame.Utils
                 Destroy(gameObject);
                 return;
             }
-            
+
             Instance = this;
         }
 

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4658792015464259569}
   - component: {fileID: 374437235031549374}
   m_Layer: 0
-  m_Name: LobbyPlayer
+  m_Name: GhostAuthoringPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

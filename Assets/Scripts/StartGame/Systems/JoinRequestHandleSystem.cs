@@ -24,7 +24,7 @@ namespace StartGame.Systems
             foreach (var (requestComponent, entity) in SystemAPI.Query<RefRO<JoinRequestComponent>>().WithEntityAccess())
             {
                 var clientWorld = ClientServerBootstrap.CreateClientWorld("ClientWorld");
-                NetworkSceneLoader.LoadMenuSubScene(clientWorld);
+                NetworkSceneLoader.LoadNetworkBootSubScene(clientWorld);
 
                 var connectEndpoint = NetworkEndpoint.Parse(requestComponent.ValueRO.EnteredIpAddress.ToString(), 7979);
                 var requestConnectEntity = clientWorld.EntityManager.CreateEntity();

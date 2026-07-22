@@ -4,11 +4,11 @@ using UnityEngine;
 
 namespace StartGame.Authoring
 {
-    public class LobbyPlayerAuthoring : MonoBehaviour
+    public class GhostAuthoring : MonoBehaviour
     {
-        private class LobbyPlayerAuthoringBaker : Baker<LobbyPlayerAuthoring>
+        private class GhostAuthoringBaker : Baker<GhostAuthoring>
         {
-            public override void Bake(LobbyPlayerAuthoring authoring)
+            public override void Bake(GhostAuthoring authoring)
             {
                 var entity = GetEntity(TransformUsageFlags.None);
                 AddComponent<LobbyPlayerComponent>(entity);

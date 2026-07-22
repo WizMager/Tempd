@@ -4,13 +4,13 @@ using UnityEngine;
 
 namespace StartGame.Authoring
 {
-    public class LobbyPlayerPrefabAuthoring : MonoBehaviour
+    public class GhostPrefabAuthoring : MonoBehaviour
     {
         public GameObject lobbyPlayerPrefab;
         
-        private class LobbyPlayerAuthoringBaker : Baker<LobbyPlayerPrefabAuthoring>
+        private class GhostPrefabAuthoringBaker : Baker<GhostPrefabAuthoring>
         {
-            public override void Bake(LobbyPlayerPrefabAuthoring prefabAuthoring)
+            public override void Bake(GhostPrefabAuthoring prefabAuthoring)
             {
                 var entity = GetEntity(TransformUsageFlags.None);
                 AddComponent(entity, new LobbyPlayerPrefabComponent
