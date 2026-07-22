@@ -22,7 +22,6 @@ namespace StartGame.Systems
             
             foreach (var (_, entity) in SystemAPI.Query<HostRequestComponent>().WithEntityAccess())
             {
-                Application.runInBackground = true;
                 var serverWorld = ClientServerBootstrap.CreateServerWorld("ServerWorld");
                 var clientWorld = ClientServerBootstrap.CreateClientWorld("ClientWorld");
                 

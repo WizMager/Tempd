@@ -75,7 +75,7 @@ namespace Ui.StartGame
                     _clientWorldEntityManager = ClientServerBootstrap.ClientWorld.EntityManager;
                     _hasClientWorldEntityManager = true;
                     
-                    if (ClientServerBootstrap.ServerWorld.IsCreated)
+                    if (ClientServerBootstrap.ServerWorld != null && ClientServerBootstrap.ServerWorld.IsCreated)
                     {
                         _startGameButton.gameObject.SetActive(true);
                     }
